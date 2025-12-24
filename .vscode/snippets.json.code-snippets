@@ -1,0 +1,138 @@
+{
+	// Place your snippets for python here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	"Print to console": {
+		"prefix": "log",
+		"body": [
+			"console.log('$1');",
+			"$2"
+		],
+		"description": "Log output to console"
+	},
+
+	// 模板名称（比如叫"Python项目模板"）
+    "Python Project Template": {
+        // 触发关键词：输入该词后按Tab即可插入模板
+        "prefix": "pybase",
+        // 模板内容（支持变量和换行）
+        "body": [
+            "# -*- coding: utf-8 -*-",
+            "\"\"\"",
+            "Author: ${1:你的名字}",
+            "Date: ${2:$CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE}",
+            "Description: ${3:项目/文件描述}",
+            "\"\"\"",
+            "",
+            "import os",
+            "import sys",
+            "",
+            "",
+            "def main():",
+            "    \"\"\"主函数\"\"\"",
+            "    try:",
+            "        ${4:pass}",  // 光标默认定位到这里
+            "    except Exception as e:",
+            "        print(f\"执行失败：{e}\")",
+            "",
+            "",
+            "if __name__ == \"__main__\":",
+            "    main()",
+            ""
+        ],
+        // 模板的描述信息
+        "description": "Python基础项目模板（包含头部注释、主函数、异常处理）"
+    },
+    // 可添加多个模板，比如"Python测试模板"
+    "Python Test Template": {
+        "prefix": "pytest",
+        "body": [
+            "import pytest",
+            "",
+            "",
+            "def test_${1:func_name}():",
+            "    ${2:pass}",
+            "",
+            "",
+            "if __name__ == \"__main__\":",
+            "    pytest.main([-v, __file__])"
+        ],
+        "description": "Python pytest测试模板"
+    },
+    "Qwen/Qwen3-8B":{
+        "prefix": "qwen",
+        "body": [
+            "Qwen/Qwen3-8B"
+        ],
+        "description": "千问3大模型"
+    },
+	"Qwen2.5-7B-Instruct":{
+		"prefix": "qwen",
+		"body": [
+			"Qwen/Qwen2.5-7B-Instruct"
+		],
+		"description": "千问2.5大模型"
+	},
+    "notimplemented": {
+        "prefix": "notimplemented",
+        "body": [
+            "def ${1:func_name}(${2:arg}):",
+            "    return NotImplemented"
+        ]
+    },
+    "# noqa: E402": {
+        "prefix": "noqa",
+        "body": "# noqa: E402"
+    },
+    "# type: ignore": {
+        "prefix": "ti",
+        "body": "# type: ignore"
+    },
+    "last message": {
+        "prefix": "lastmessage",
+        "body": "state[\"messages\"][-1]"
+    },
+    "MyState": {
+        "prefix": "mystate",
+        "body": [
+            "class MyState(${1:parentClass}):",
+            "    ${2:field1}: ${3:type1}"
+        ]
+    },
+    "only import rprint": {
+        "prefix": "rich",
+        "body": [
+            "from rich import print as rprint",
+        ]
+    },
+    "auto install": {
+        "prefix": "rich install",
+        "body": [
+            "from rich.pretty import install as rich_install",
+            "rich_install()"
+        ]
+    },
+    "class": {
+        "prefix": "cls",
+        "body": [
+            "class ${1:className}:",
+            "    def __init__(self, ${2:arg}):",
+            "        ${3:pass}"
+        ]
+    },
+    "class inherit": {
+        "prefix": "clsi",
+        "body": [
+            "class ${1:className}(${2:parentClass}):",
+            "    def __init__(self, ${3:arg}):",
+            "        ${4:pass}"
+        ]
+    },
+    "import graph": {
+        "prefix": "import",
+        "body": "from langgraph.graph import StateGraph, START, END, MessagesState"
+    }
+
+}

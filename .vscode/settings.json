@@ -1,0 +1,16 @@
+{
+    "trae.tab.enableRename": false,
+    "trae.tab.enableAutoImport": false,
+    "python.analysis.autoImportCompletions": false,
+    "python.analysis.extraPaths": [
+        "/Users/a114514/LangGraph/.venv/lib/python3.13/site-packages/langchain",
+        "/Users/a114514/LangGraph/.venv/lib/python3.13/site-packages/langchain_core",
+        "/Users/a114514/LangGraph/.venv/lib/python3.13/site-packages/langchain_openai",
+        "/Users/a114514/LangGraph/.venv/lib/python3.13/site-packages/langgraph/graph",
+        "/Users/a114514/LangGraph/.venv/lib/python3.13/site-packages/langgraph",
+    ],
+    "trae.tab.cue": false,
+    // "[python]": { // 仅针对 Python 文件
+    //     "editor.autoClosingQuotes": "always"
+    // }
+}
