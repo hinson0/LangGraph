@@ -198,7 +198,7 @@ graph.set_finish_point(double_node.__name__)
 agent = graph.compile()
 
 input = {"value": 1, "history": [], "number": 10}
-agent.invoke(input)
+a = agent.invoke(input)
 
 """
 可以发现，其实set_finish_point('a_node')在效果是等价add_edge('a_node', END)效果的，

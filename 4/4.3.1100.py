@@ -153,3 +153,4 @@ def run_with_human_editing():
 # ================================================
 if __name__ == "__main__":
     run_with_human_editing()
+# {'value': 8, 'history': [2, 4, 8], 'user_feedback': '等待人工编辑...'}

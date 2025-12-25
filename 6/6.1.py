@@ -1,4 +1,4 @@
-# %%
+# %% 6-1 create_agent
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 
@@ -6,7 +6,7 @@ model = ChatOpenAI(model="Qwen/Qwen3-8B", temperature=0)
 
 
 # 获取天气tool
-def get_weather_tool(city: str, arg2):
+def get_weather_tool(city: str, arg2):  # type: ignore
     """use this tool to get the weather information for a city"""
     weather = ""
     match city.lower():
@@ -21,7 +21,7 @@ def get_weather_tool(city: str, arg2):
 
 # 初始化agent
 agent = create_agent(model=model, tools=[get_weather_tool])
-response = agent.invoke({"messages": [("user", "How's the weather in sf?")]})
+response = agent.invoke({"messages": [("user", "How's the weather in sf?")]})  # type: ignore
 print(response["messages"][-1].content)
 # 'The weather in San Francisco is always sunny! 🌞'
 
@@ -108,8 +108,7 @@ response["messages"][-3]
 #         'output_token_details': {'reasoning': 0}
 #     }
 # )
-# %% prompt 提示词
-# 使用prompt参数设置自定义系统提示以进行中文回复
+# %% 6-2 使用prompt参数设置自定义系统提示以进行中文回复
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 
@@ -229,7 +228,7 @@ response["messages"]
 # ]
 
 
-# %% 添加对话记忆。使用checkpointer参数向智能体添加内存聊天记忆功能
+# %% 6-3添加对话记忆。使用checkpointer参数向智能体添加内存聊天记忆功能
 
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
@@ -280,7 +279,6 @@ response1["messages"][-1]
 #     }
 # )
 
-# %% 第2次交互
 inputs2 = {"messages": [("user", "How is chicago?")]}
 response2 = agent.invoke(input=inputs2, config=config)
 response2["messages"][-1]
@@ -317,7 +315,7 @@ response2["messages"][-1]
 #     }
 # )
 
-# %% 第3次交互
+# %% 6-3 第3次交互
 inputs3 = {"messages": [("user", "How is nyc?")]}
 response3 = agent.invoke(input=inputs3, config=config)
 response3["messages"][-1]
@@ -354,7 +352,7 @@ response3["messages"][-1]
 #     }
 # )
 
-# %% 测试
+# %% 6-3 测试
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 from langgraph.checkpoint.memory import InMemorySaver
@@ -408,7 +406,254 @@ response1["messages"][-1]
 只有228个。
 """
 
-# %% 使用interrupt_before和checkpointer来启用人机环路
+# %% 6-4 使用interrupt_before和checkpointer来启用人机环路
 
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
+from langgraph.checkpoint.memory import MemorySaver
+from langchain.messages import HumanMessage
+from rich import print as rp
+
+
+def get_weather_tool(city: str, arg2):
+    """use this tool to get the weather information for a city"""
+    weather = ""
+    match city.lower():
+        case "nyc":
+            weather = "cloudy"
+        case "sf":
+            weather = "sunny"
+        case _:
+            weather = "Unable to get the weather information for this city"
+    return weather
+
+
+# 创建启用人机环路的ReAct智能体，在tools之前
+agent = create_agent(
+    model=ChatOpenAI(model="Qwen/Qwen3-8B", temperature=0),
+    tools=[get_weather_tool],
+    interrupt_before=["tools"],
+    checkpointer=MemorySaver(),
+)
+
+# 首次交互
+config = {"configurable": {"thread_id": "user_thread_1"}}
+stream = agent.stream(
+    {"messages": [HumanMessage(content="How's the weather in sf?")]},
+    config=config,
+    stream_mode="values",
+)
+
+for chunk in stream:
+    rp(chunk)
+
+# {
+#     'messages': [
+#         HumanMessage(
+#             content="How's the weather in sf?",
+#             additional_kwargs={},
+#             response_metadata={},
+#             id='d37aa6bf-20f1-4dcf-abad-b258eb26284a'
+#         )
+#     ]
+# }
+
+# {
+#     'messages': [
+#         HumanMessage(
+#             content="How's the weather in sf?",
+#             additional_kwargs={},
+#             response_metadata={},
+#             id='d37aa6bf-20f1-4dcf-abad-b258eb26284a'
+#         ),
+#         AIMessage(
+#             content='',
+#             additional_kwargs={'refusal': None},
+#             response_metadata={
+#                 'token_usage': {
+#                     'completion_tokens': 27,
+#                     'prompt_tokens': 176,
+#                     'total_tokens': 203,
+#                     'completion_tokens_details': {
+#                         'accepted_prediction_tokens': None,
+#                         'audio_tokens': None,
+#                         'reasoning_tokens': 0,
+#                         'rejected_prediction_tokens': None
+#                     },
+#                     'prompt_tokens_details': None
+#                 },
+#                 'model_provider': 'openai',
+#                 'model_name': 'Qwen/Qwen3-8B',
+#                 'system_fingerprint': '',
+#                 'id': '019b4f8eb10ce02bbd957275d1f5c362',
+#                 'finish_reason': 'tool_calls',
+#                 'logprobs': None
+#             },
+#             id='lc_run--019b4f8e-b01b-7c40-858b-5fb050427e62-0',
+#             tool_calls=[
+#                 {
+#                     'name': 'get_weather_tool',
+#                     'args': {'city': 'sf', 'arg2': 'weather'},
+#                     'id': '019b4f8eb849371c90b4b7f126eda366',
+#                     'type': 'tool_call'
+#                 }
+#             ],
+#             usage_metadata={
+#                 'input_tokens': 176,
+#                 'output_tokens': 27,
+#                 'total_tokens': 203,
+#                 'input_token_details': {},
+#                 'output_token_details': {'reasoning': 0}
+#             }
+#         )
+#     ]
+# }
+
+"""
+可以看到，现在已经被暂停了。AIMessage现在停在tools（get_weather_tool）之前，尚未触发
+get_weather_tool
+"""
+
+# %% 继续执行图下面的流程
+# from langgraph.types import Command
+# agent.invoke()
+
+# %% 6-5 通过response_format参数，利用pydantic模型实现结构化输出
+from langchain_openai import ChatOpenAI
+from langchain.agents import create_agent
+from pydantic import BaseModel, Field
+from langchain.messages import HumanMessage
+
+
+def get_weather_tool(city: str, arg2):  # type: ignore
+    """use this tool to get the weather information for a city"""
+    weather = ""
+    match city.lower():
+        case "nyc":
+            weather = "cloudy"
+        case "sf":
+            weather = "sunny"
+        case _:
+            weather = "Unable to get the weather information for this city"
+    return weather
+
+
+class WeatherResponse(BaseModel):
+    conditions: str = Field(description="weather conditions")
+
+
+agent = create_agent(
+    model=ChatOpenAI(model="Qwen/Qwen3-8B"),
+    tools=[get_weather_tool],
+    response_format=WeatherResponse,
+)
+
+result = agent.invoke({"messages": [HumanMessage(content="How is the weather in sf?")]})
+result
+# {
+#     'messages': [
+#         HumanMessage(
+#             content='How is the weather in sf?',
+#             additional_kwargs={},
+#             response_metadata={},
+#             id='da347526-cc1b-4958-a317-0513cd2eb0e7'
+#         ),
+#         AIMessage(
+#             content='',
+#             additional_kwargs={'refusal': None},
+#             response_metadata={
+#                 'token_usage': {
+#                     'completion_tokens': 28,
+#                     'prompt_tokens': 236,
+#                     'total_tokens': 264,
+#                     'completion_tokens_details': {
+#                         'accepted_prediction_tokens': None,
+#                         'audio_tokens': None,
+#                         'reasoning_tokens': 0,
+#                         'rejected_prediction_tokens': None
+#                     },
+#                     'prompt_tokens_details': None
+#                 },
+#                 'model_provider': 'openai',
+#                 'model_name': 'Qwen/Qwen3-8B',
+#                 'system_fingerprint': '',
+#                 'id': '019b52eaa7092dcd8ff5ab40f3f930cd',
+#                 'finish_reason': 'tool_calls',
+#                 'logprobs': None
+#             },
+#             id='lc_run--019b52ea-a634-7463-91c7-a6ad790e1af9-0',
+#             tool_calls=[
+#                 {
+#                     'name': 'get_weather_tool',
+#                     'args': {'city': 'sf', 'arg2': 'today'},
+#                     'id': '019b52eaaf76f8981fb8da75c7055af5',
+#                     'type': 'tool_call'
+#                 }
+#             ],
+#             usage_metadata={
+#                 'input_tokens': 236,
+#                 'output_tokens': 28,
+#                 'total_tokens': 264,
+#                 'input_token_details': {},
+#                 'output_token_details': {'reasoning': 0}
+#             }
+#         ),
+#         ToolMessage(
+#             content='sunny',
+#             name='get_weather_tool',
+#             id='1fb8704d-171e-43ed-a0d0-56905d798e32',
+#             tool_call_id='019b52eaaf76f8981fb8da75c7055af5'
+#         ),
+#         AIMessage(
+#             content='',
+#             additional_kwargs={'refusal': None},
+#             response_metadata={
+#                 'token_usage': {
+#                     'completion_tokens': 21,
+#                     'prompt_tokens': 279,
+#                     'total_tokens': 300,
+#                     'completion_tokens_details': {
+#                         'accepted_prediction_tokens': None,
+#                         'audio_tokens': None,
+#                         'reasoning_tokens': 0,
+#                         'rejected_prediction_tokens': None
+#                     },
+#                     'prompt_tokens_details': None
+#                 },
+#                 'model_provider': 'openai',
+#                 'model_name': 'Qwen/Qwen3-8B',
+#                 'system_fingerprint': '',
+#                 'id': '019b52eab0008d9487f6a007178fc636',
+#                 'finish_reason': 'tool_calls',
+#                 'logprobs': None
+#             },
+#             id='lc_run--019b52ea-afaa-75d1-950f-838cb682beab-0',
+#             tool_calls=[
+#                 {
+#                     'name': 'WeatherResponse',
+#                     'args': {'conditions': 'sunny'},
+#                     'id': '019b52eab8feeb68c03f05c1e5b2e842',
+#                     'type': 'tool_call'
+#                 }
+#             ],
+#             usage_metadata={
+#                 'input_tokens': 279,
+#                 'output_tokens': 21,
+#                 'total_tokens': 300,
+#                 'input_token_details': {},
+#                 'output_token_details': {'reasoning': 0}
+#             }
+#         ),
+#         ToolMessage(
+#             content="Returning structured response: conditions='sunny'",
+#             name='WeatherResponse',
+#             id='542c0db8-f6a0-48f3-94e2-28da93be14cf',
+#             tool_call_id='019b52eab8feeb68c03f05c1e5b2e842'
+#         )
+#     ],
+#     'structured_response': WeatherResponse(conditions='sunny')
+# }
+
+
+result["structured_response"]
+result["structured_response"].conditions

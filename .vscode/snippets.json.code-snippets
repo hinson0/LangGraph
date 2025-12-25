@@ -104,7 +104,7 @@
     "only import rprint": {
         "prefix": "rich",
         "body": [
-            "from rich import print as rprint",
+            "from rich import print as rp",
         ]
     },
     "auto install": {

@@ -1,0 +1,112 @@
+# %% 6-6 @entrypoint定义
+from langgraph.func import task, entrypoint
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.store.memory import InMemoryStore
+from langgraph.store.base import BaseStore
+from langgraph.types import StreamWriter
+from langchain_core.runnables import RunnableConfig
+from typing import Any
+from rich import print as rp
+
+
+@entrypoint(checkpointer=MemorySaver(), store=InMemoryStore())
+def my_workflow(
+    user_input: dict,
+    *,
+    previous: Any = None,
+    store: BaseStore,
+    writer: StreamWriter,
+    config: RunnableConfig,
+) -> str:
+    rp(previous)  # None
+    rp(store)  # <langgraph.store.memory.InMemoryStore object at 0x109a2e9e0>
+    rp(writer)  # <function Pregel.stream.<locals>.stream_writer at 0x10472f100>
+    rp(config)
+    # {
+    #     'metadata': {
+    #         'thread_id': 'complex_workflow_1',
+    #         'api_version': 'v2',
+    #         'langgraph_step': 0,
+    #         'langgraph_node': 'my_workflow',
+    #         'langgraph_triggers': ('__start__',),
+    #         'langgraph_path': ('__pregel_pull', 'my_workflow'),
+    #         'langgraph_checkpoint_ns': 'my_workflow:647994e1-c861-5a1a-26d8-e3f55129411e'
+    #     },
+    #     'configurable': {
+    #         'thread_id': 'complex_workflow_1',
+    #         'api_version': 'v2',
+    #         '__pregel_runtime': Runtime(
+    #             context=None,
+    #             store=<langgraph.store.memory.InMemoryStore object at 0x109a2e9e0>,
+    #             stream_writer=<function Pregel.stream.<locals>.stream_writer at 0x10472f100>,
+    #             previous=None
+    #         ),
+    #         '__pregel_resuming': False,
+    #         '__pregel_task_id': '647994e1-c861-5a1a-26d8-e3f55129411e',
+    #         '__pregel_send': <built-in method extend of collections.deque object at 0x1099d1e40>,
+    #         '__pregel_read': functools.partial(<function local_read at 0x1099a99e0>, PregelScratchpad(step=0, stop=25,
+    # call_counter=<langgraph.pregel._algo.LazyAtomicCounter object at 0x1099fe8f0>,
+    # interrupt_counter=<langgraph.pregel._algo.LazyAtomicCounter object at 0x1099fe950>, get_null_resume=<function
+    # _scratchpad.<locals>.get_null_resume at 0x109a1bb00>, resume=[],
+    # subgraph_counter=<langgraph.pregel._algo.LazyAtomicCounter object at 0x1099fe980>), {'__start__':
+    # <langgraph.channels.ephemeral_value.EphemeralValue object at 0x109a427c0>, '__end__':
+    # <langgraph.channels.last_value.LastValue object at 0x109a425c0>, '__previous__':
+    # <langgraph.channels.last_value.LastValue object at 0x109a42480>, '__pregel_tasks': <langgraph.channels.topic.Topic
+    # object at 0x1098e3c40>}, {}, PregelTaskWrites(path=('__pregel_pull', 'my_workflow'), name='my_workflow',
+    # writes=deque([]), triggers=('__start__',))),
+    #         '__pregel_checkpointer': <langgraph.checkpoint.memory.InMemorySaver object at 0x1099439d0>,
+    #         'checkpoint_map': {'': '1f0e0d2f-296e-6270-bfff-4f6407b2f630'},
+    #         'checkpoint_id': None,
+    #         'checkpoint_ns': 'my_workflow:647994e1-c861-5a1a-26d8-e3f55129411e',
+    #         '__pregel_scratchpad': PregelScratchpad(
+    #             step=0,
+    #             stop=25,
+    #             call_counter=<langgraph.pregel._algo.LazyAtomicCounter object at 0x1099fe8f0>,
+    #             interrupt_counter=<langgraph.pregel._algo.LazyAtomicCounter object at 0x1099fe950>,
+    #             get_null_resume=<function _scratchpad.<locals>.get_null_resume at 0x109a1bb00>,
+    #             resume=[],
+    #             subgraph_counter=<langgraph.pregel._algo.LazyAtomicCounter object at 0x1099fe980>
+    #         ),
+    #         '__pregel_call': functools.partial(<function _call at 0x1099e3e20>, <weakref at 0x109a2fb00; to
+    # 'langgraph.types.PregelExecutableTask' at 0x1099b2720>, retry_policy=None, futures=<weakref at 0x109a2fb50; to
+    # 'langgraph.pregel._runner.FuturesDict' at 0x109a2f980>, schedule_task=<bound method SyncPregelLoop.accept_push of
+    # <langgraph.pregel._loop.SyncPregelLoop object at 0x109a48190>>, submit=<weakref at 0x109a38fd0; to
+    # 'langgraph.pregel._executor.BackgroundExecutor' at 0x109a482d0>)
+    #     },
+    #     'callbacks': <langchain_core.callbacks.manager.CallbackManager object at 0x1099b6f10>
+    # }
+
+    api_key_from_config = config.get("configurable", {}).get("api_version")
+    writer(
+        f"工作流{config.get('metadata', {}).get('thread_id')}，以API版本\
+            启动：{api_key_from_config}"
+    )
+
+    # 使用注入参数的工作流逻辑
+    return f"工作流处理的输入:{user_input}"
+
+
+# 示例调用
+result = my_workflow.invoke(
+    {"messages": "hello"},
+    config={"configurable": {"thread_id": "complex_workflow_1", "api_version": "v2"}},
+)
+result
+# "工作流处理的输入:{'messages': 'hello'}"
+
+# %%
+result = my_workflow.invoke(
+    "hello",
+    config={"configurable": {"thread_id": "complex_workflow_1", "api_version": "v2"}},
+)
+result
+# '工作流处理的输入:hello'
+
+
+# %%
+result = my_workflow.invoke(
+    {"messages": [("user", "hello")]},
+    config={"configurable": {"thread_id": "complex_workflow_1", "api_version": "v2"}},
+)
+result
+# "工作流处理的输入:{'messages': [('user', 'hello')]}"

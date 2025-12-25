@@ -31,6 +31,19 @@ llm_response = llm.invoke(
 llm_response
 
 # %%
+response2 = llm.invoke("hello")
+response2
+
+# %%
+from langchain.messages import HumanMessage
+
+response3 = llm.invoke({"messages": [HumanMessage("hello")]})  # type: ignore
+response3
+
+
+# %%
+
+# %%
 # 导入 rich 的 print 函数（替换默认 print）
 from rich import print as rprint
 from rich.pretty import install
