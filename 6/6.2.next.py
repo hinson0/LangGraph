@@ -141,6 +141,7 @@ retry_policy = RetryPolicy(max_attempts=3, retry_on=ValueError)
 
 @task(retry_policy=retry_policy)
 def unreliable_task():
+    print(1)
     import random
 
     if random.random() < 0.8:
@@ -152,3 +153,40 @@ def unreliable_task():
 def retry_workflow(input: str):
     result = unreliable_task().result()
     return result
+
+
+config = {"configurable": {"thread_id": "thread_id_1720"}}
+result = retry_workflow.invoke("test input...", config)
+result
+
+""" 
+1
+1
+1
+ValueError: 任务失败！                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+"""
+
+# %% 6-17 在Functional API中实现短期记忆
+from langgraph.func import entrypoint
+from langgraph.checkpoint.memory import MemorySaver
+
+
+@entrypoint(checkpointer=MemorySaver())
+def counter_workflow(increment: int, previous):
+    previous = previous or 0
+    current_count = previous + increment
+    return entrypoint.final(value=current_count, save=current_count)
+
+
+config = {"configurable": {"thread_id": {"thread_id_1806"}}}
+print(counter_workflow.invoke(1, config))
+print(counter_workflow.invoke(2, config))
+print(counter_workflow.invoke(3, config))
+
+""" 
+1
+3
+6
+"""
+
+# %% 6-18 在Functional API中管理长期记忆
