@@ -94,17 +94,24 @@
         "prefix": "lastmessage",
         "body": "state[\"messages\"][-1]"
     },
-    "MyState": {
-        "prefix": "mystate",
+    "inherit from TypedDict": {
+        "prefix": "td",
         "body": [
-            "class MyState(${1:parentClass}):",
+            "class ${1:cls_name}(TypedDict):",
+            "    ${2:field1}: ${3:type1}"
+        ]
+    },
+    "inherit from MessagesState": {
+        "prefix": "ms",
+        "body": [
+            "class ${1:cls_name}(MessagesState):",
             "    ${2:field1}: ${3:type1}"
         ]
     },
     "only import rprint": {
         "prefix": "rich",
         "body": [
-            "from rich import print as rp",
+            "from rich import print",
         ]
     },
     "auto install": {
